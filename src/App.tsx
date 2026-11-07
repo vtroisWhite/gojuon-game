@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useGame } from './useGame';
 import { createSession } from './engine';
 import { dictionaries } from './i18n';
-import { uiText } from './uiText';
 import { HomePage } from './components/HomePage';
 import { LearnPage } from './components/LearnPage';
 import { GamePage } from './components/GamePage';
@@ -24,7 +23,6 @@ export default function App() {
     view === 'game' && dialog === null,
   );
   const t = dictionaries[data.language];
-  const x = uiText[data.language];
   const [, refreshDate] = useState(0);
   useEffect(() => {
     document.title = t.name;
@@ -124,10 +122,7 @@ export default function App() {
       </header>
       {storageWarning && (
         <div className="notice" role="status">
-          <span>
-            {t.storageWarning}
-            {storageWarning === 'corrupt' && <> {x.clearHint}</>}
-          </span>
+          <span>{t.storageWarning}</span>
         </div>
       )}
       {error && (

@@ -15,7 +15,7 @@ export const DEFAULT_SETTINGS: PracticeSettings = {
   mode: 'kana-romaji',
   rows: [],
   presentation: 'direct',
-  feedbackSpeed: 'standard',
+  feedbackSpeed: 'auto',
 };
 
 // Derive both scripts from one reading table.

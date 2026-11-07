@@ -126,7 +126,7 @@ export function GamePage({ data, dispatch, home, onEnd }: PageProps & { onEnd: (
               <div className="answer-options">
                 {question.options.map((option, index) => (
                   <button
-                    key={option}
+                    key={question.id + ':' + option}
                     className={
                       'answer-option ' +
                       (answer && option === question.correctAnswer

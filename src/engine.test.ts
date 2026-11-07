@@ -175,13 +175,13 @@ describe('按方向复习和反馈快照', () => {
     expect(() => createSession(DEFAULT_SETTINGS, {}, 'review', seededRandom(), NOW)).toThrow();
   });
   it('建局保存实际反馈策略和回想阶段，后续偏好修改不改变本局', () => {
-    const config = settings({ feedbackSpeed: 'fast', presentation: 'recall' });
+    const config = settings({ feedbackSpeed: 'auto', presentation: 'recall' });
     const session = createSession(config, {}, 'free', seededRandom(), NOW);
     config.feedbackSpeed = 'manual';
     config.rows.push('other');
     expect(session.feedbackDelayMs).toBe(100);
     expect(session.phase).toBe('recall');
-    expect(session.settings.feedbackSpeed).toBe('fast');
+    expect(session.settings.feedbackSpeed).toBe('auto');
     expect(session.settings.rows).toEqual([]);
     expect(createSession(settings({ feedbackSpeed: 'manual' }), {}).feedbackDelayMs).toBeNull();
   });

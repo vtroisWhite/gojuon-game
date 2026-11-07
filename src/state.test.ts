@@ -49,12 +49,12 @@ describe('v1 game state', () => {
     expect(next(r)).toBe(r);
     r = tick(r, 65);
     r = gameReducer(r, { type: 'REVEAL' });
-    expect(r.session?.questionElapsedMs).toBe(65);
+    expect(r.session?.questionElapsedMs).toBe(0);
     expect(gameReducer(r, { type: 'ANSWER', choice: 'invalid', inputMethod: 'pointer', now })).toBe(
       r,
     );
     r = answer(tick(r, 35));
-    expect(r.session?.answers[0].responseMs).toBe(100);
+    expect(r.session?.answers[0].responseMs).toBe(35);
     expect(answer(r)).toBe(r);
     expect(r.stats.answered).toBe(1);
   });
@@ -148,15 +148,15 @@ describe('v1 game state', () => {
     expect(next(paused)).toBe(paused);
   });
 
-  it.each(['standard', 'fast'] as const)('uses the session %s feedback snapshot', (speed) => {
-    let r = answer(start('free', 1, 'direct', speed));
+  it.each(['auto'] as const)('uses the session %s feedback snapshot', (speed) => {
+    let r = answer(tick(start('free', 1, 'direct', speed), 123));
     const delay = FEEDBACK_DELAYS[speed]!;
     expect(next(r)).toBe(r);
     r = tick(r, delay - 1);
     expect(r.session?.status).toBe('active');
     r = tick(r, 5000);
     expect(r.session?.status).toBe('completed');
-    expect(r.stats.elapsedMs).toBe(delay);
+    expect(r.stats.elapsedMs).toBe(123);
     expect(tick(r, 99)).toBe(r);
     expect(gameReducer(r, { type: 'ABANDON', now })).toBe(r);
     expect(r.history).toHaveLength(1);
@@ -167,6 +167,7 @@ describe('v1 game state', () => {
     r = tick(r, 60000);
     expect(r.session?.status).toBe('active');
     expect(r.session?.answers[0].responseMs).toBe(120);
+    expect(r.stats.elapsedMs).toBe(120);
     expect(next(r).session?.status).toBe('completed');
   });
 

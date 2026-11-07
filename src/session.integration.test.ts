@@ -12,7 +12,7 @@ describe('session persistence contract', () => {
     'persists every %s transition and frozen correction queue',
     (kind) => {
       for (const presentation of ['direct', 'recall'] as Presentation[]) {
-        for (const feedbackSpeed of ['manual', 'standard', 'fast'] as FeedbackSpeed[]) {
+        for (const feedbackSpeed of ['manual', 'auto'] as FeedbackSpeed[]) {
           let r = createInitialRecord();
           const check = () => {
             let saved = '';

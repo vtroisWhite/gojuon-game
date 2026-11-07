@@ -5,14 +5,14 @@ import { createInitialRecord, gameReducer } from './state';
 
 vi.mock('./config', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./config')>();
-  return { ...actual, FEEDBACK_DELAYS: { ...actual.FEEDBACK_DELAYS, fast: 1500 } };
+  return { ...actual, FEEDBACK_DELAYS: { ...actual.FEEDBACK_DELAYS, auto: 1500 } };
 });
 
 describe('统一反馈配置', () => {
   it('建局采用自定义预设，计时只按本局快照推进', () => {
     const now = '2026-11-07T12:00:00Z';
     const session = createSession(
-      { ...DEFAULT_SETTINGS, feedbackSpeed: 'fast' },
+      { ...DEFAULT_SETTINGS, feedbackSpeed: 'auto' },
       {},
       'free',
       Math.random,

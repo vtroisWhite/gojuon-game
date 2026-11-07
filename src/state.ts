@@ -258,7 +258,7 @@ export function gameReducer(record: LearningRecord, action: GameAction): Learnin
     }
     case 'REVEAL':
       return session?.status === 'active' && !session.paused && session.phase === 'recall'
-        ? { ...record, session: { ...session, phase: 'choice' } }
+        ? { ...record, session: { ...session, phase: 'choice', questionElapsedMs: 0 } }
         : record;
     case 'TICK': {
       if (
@@ -272,17 +272,16 @@ export function gameReducer(record: LearningRecord, action: GameAction): Learnin
       const current = session.answers[session.index];
       const auto =
         session.phase === 'feedback' && current?.correct && session.feedbackDelayMs !== null;
-      const elapsed = auto ? Math.min(action.deltaMs, session.feedbackRemainingMs) : action.deltaMs;
+      const elapsed = session.phase === 'choice' ? action.deltaMs : 0;
       const remaining = auto
-        ? Math.max(0, session.feedbackRemainingMs - elapsed)
+        ? Math.max(0, session.feedbackRemainingMs - action.deltaMs)
         : session.feedbackRemainingMs;
       const next: LearningRecord = {
         ...record,
         session: {
           ...session,
           elapsedMs: session.elapsedMs + elapsed,
-          questionElapsedMs:
-            session.questionElapsedMs + (session.phase === 'feedback' ? 0 : elapsed),
+          questionElapsedMs: session.questionElapsedMs + elapsed,
           feedbackRemainingMs: remaining,
         },
         stats: { ...record.stats, elapsedMs: record.stats.elapsedMs + elapsed },

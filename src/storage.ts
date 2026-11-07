@@ -431,3 +431,13 @@ export function saveRecord(storage: Pick<Storage, 'setItem'>, data: LearningReco
     return 'unavailable';
   }
 }
+
+export function initializeStorage(
+  storage: Pick<Storage, 'getItem' | 'setItem'>,
+  language: Language,
+): { data: LearningRecord; warning: string | null } {
+  const loaded = loadRecord(storage, language);
+  if (loaded.warning !== 'corrupt') return loaded;
+  // Replace only this game's invalid record; other site data stays intact.
+  return { data: loaded.data, warning: saveRecord(storage, loaded.data) };
+}

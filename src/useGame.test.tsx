@@ -95,6 +95,32 @@ afterEach(() => {
 });
 
 describe('learning game browser lifecycle', () => {
+  it('counts only visible-choice time in individual and cumulative durations', () => {
+    start({ presentation: 'recall', feedbackSpeed: 'auto' }, 2);
+    wait(2000);
+    expect(current.data.stats.elapsedMs).toBe(0);
+    act(() => current.dispatch({ type: 'REVEAL' }));
+    wait(45);
+    press(' ', 'Space');
+    wait(5000);
+    press(' ', 'Space');
+    wait(35);
+    press('1');
+    expect(current.data.session?.answers[0].responseMs).toBe(80);
+    expect(current.data.stats.elapsedMs).toBe(80);
+    wait(1000);
+    expect(current.data.session?.phase).toBe('recall');
+    expect(current.data.stats.elapsedMs).toBe(80);
+    act(() => current.dispatch({ type: 'REVEAL' }));
+    wait(25);
+    press('0');
+    wait(3000);
+    press('Enter');
+    expect(current.data.history[0].elapsedMs).toBe(105);
+    expect(current.data.stats.elapsedMs).toBe(105);
+    expect(current.data.session?.answers.map((a) => a.responseMs)).toEqual([80, 25]);
+  });
+
   it('handles a shortcut event whose target is the window', () => {
     act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: '1', code: 'Digit1' })));
     expect(current.data.stats.answered).toBe(1);
@@ -145,19 +171,19 @@ describe('learning game browser lifecycle', () => {
     expect(current.data.session?.answers[0].responseMs).toBe(110);
   });
 
-  it('ignores numeric input during recall and includes recall time after revealing', () => {
+  it('ignores numeric input and excludes time during recall before revealing', () => {
     start({ presentation: 'recall' });
     wait(125);
     press('1');
     expect(current.data.session?.phase).toBe('recall');
     expect(current.data.session?.answers).toHaveLength(0);
     act(() => current.dispatch({ type: 'REVEAL' }));
-    expect(current.data.session).toMatchObject({ phase: 'choice', questionElapsedMs: 125 });
+    expect(current.data.session).toMatchObject({ phase: 'choice', questionElapsedMs: 0 });
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).session.phase).toBe('choice');
     wait(40);
     press('2', 'Numpad2');
     expect(current.data.session?.answers[0]).toMatchObject({
-      responseMs: 165,
+      responseMs: 40,
       outcome: 'incorrect',
       inputMethod: 'keyboard',
     });
@@ -198,18 +224,24 @@ describe('learning game browser lifecycle', () => {
     expect(current.data.session?.index).toBe(1);
   });
 
-  it.each(['Digit0', 'Numpad0'])('submits unknown with %s only once and preserves timing', (code) => {
-    wait(165);
-    press('0', code);
-    expect(current.data.session?.answers[0]).toMatchObject({
-      choice: null, outcome: 'unknown', inputMethod: 'keyboard', responseMs: 165,
-    });
-    press('0', code);
-    expect(current.data.stats.answered).toBe(1);
-    expect(current.data.session?.phase).toBe('feedback');
-    press('Enter');
-    expect(current.data.session?.index).toBe(1);
-  });
+  it.each(['Digit0', 'Numpad0'])(
+    'submits unknown with %s only once and preserves timing',
+    (code) => {
+      wait(165);
+      press('0', code);
+      expect(current.data.session?.answers[0]).toMatchObject({
+        choice: null,
+        outcome: 'unknown',
+        inputMethod: 'keyboard',
+        responseMs: 165,
+      });
+      press('0', code);
+      expect(current.data.stats.answered).toBe(1);
+      expect(current.data.session?.phase).toBe('feedback');
+      press('Enter');
+      expect(current.data.session?.index).toBe(1);
+    },
+  );
 
   it('ignores zero during recall, pause and form input', () => {
     start({ presentation: 'recall' });
@@ -227,7 +259,7 @@ describe('learning game browser lifecycle', () => {
   });
 
   it('does not let a duplicate answer flush fast feedback and answer the next question', () => {
-    start({ feedbackSpeed: 'fast' });
+    start({ feedbackSpeed: 'auto' });
     wait(165);
     press('1');
     wait(101);
@@ -241,10 +273,10 @@ describe('learning game browser lifecycle', () => {
 
   it('freezes feedback while paused and resumes exactly its remaining interval', () => {
     press('1');
-    wait(350);
+    wait(FEEDBACK_DELAYS.auto! / 2);
     press(' ', 'Space');
     const paused = current.data.session!;
-    expect(paused.feedbackRemainingMs).toBe(350);
+    expect(paused.feedbackRemainingMs).toBe(FEEDBACK_DELAYS.auto! / 2);
     wait(5000);
     press('1');
     expect(current.data.session).toEqual(paused);
@@ -284,14 +316,14 @@ describe('learning game browser lifecycle', () => {
 
   it('persists the same feedback and option ordering when unmounting without a prior pagehide', () => {
     press('1');
-    wait(350);
+    wait(FEEDBACK_DELAYS.auto! / 2);
     const questions = current.data.session!.questions;
     remount();
     expect(current.storageWarning).toBeNull();
     expect(current.data.session).toMatchObject({
       paused: true,
       phase: 'feedback',
-      feedbackRemainingMs: 350,
+      feedbackRemainingMs: FEEDBACK_DELAYS.auto! / 2,
     });
     expect(current.data.session?.questions).toEqual(questions);
     expect(current.data.stats.answered).toBe(1);
@@ -333,7 +365,7 @@ describe('learning game browser lifecycle', () => {
 
   it('saves completion immediately instead of waiting for the next scheduled snapshot', () => {
     act(() => current.clearRecords());
-    start({ feedbackSpeed: 'fast' }, 1);
+    start({ feedbackSpeed: 'auto' }, 1);
     press('1');
     wait(100);
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
@@ -359,20 +391,22 @@ describe('learning game browser lifecycle', () => {
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).learnedLessons).toContain(lesson.id);
   });
 
-  it('leaves corrupt records untouched during temporary practice until an explicit clear', () => {
+  it('automatically resets corrupt records and resumes persistent practice', () => {
     act(() => root.unmount());
     localStorage.setItem(STORAGE_KEY, '{"version":1}');
+    localStorage.setItem('unrelated-data', 'keep');
     root = createRoot(container);
     act(() => root.render(createElement(Harness, { enabled: true })));
-    expect(current.storageWarning).toBe('corrupt');
+    expect(current.storageWarning).toBeNull();
+    expect(current.data.stats.answered).toBe(0);
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).schema).toBe('learning-v1');
+    expect(localStorage.getItem('unrelated-data')).toBe('keep');
     start();
     wait(1100);
     press('1');
-    expect(localStorage.getItem(STORAGE_KEY)).toBe('{"version":1}');
-    act(() => current.clearRecords());
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).stats.answered).toBe(1);
     expect(current.storageWarning).toBeNull();
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).schema).toBe('learning-v1');
-    expect(current.data.session).toBeNull();
   });
 
   it('keeps the last persisted record on quota failure and continues in memory', () => {

@@ -3,8 +3,7 @@ import type { FeedbackSpeed } from './types';
 // Feedback durations in milliseconds; null means manual continuation.
 export const FEEDBACK_DELAYS: Record<FeedbackSpeed, number | null> = {
   manual: null,
-  standard: 700,
-  fast: 100,
+  auto: 100,
 };
 export const REVIEW_INTERVAL_DAYS = [1, 3, 7, 14, 30] as const;
 export const REINFORCEMENT_GAP = 3;

@@ -63,6 +63,44 @@ afterEach(() => {
 });
 
 describe('learning interface', () => {
+  it.each(['zh-CN', 'en'] as const)(
+    'defaults to automatic continuation with two choices in %s',
+    (language) => {
+      mount(createInitialRecord(language));
+      const select = container.querySelectorAll<HTMLSelectElement>('.settings-pair select')[1];
+      expect(select.value).toBe('auto');
+      expect(Array.from(select.options).map((option) => option.value)).toEqual(['manual', 'auto']);
+      expect(select.textContent).toContain(language === 'zh-CN' ? '自动继续' : 'Automatically');
+      expect(select.textContent).not.toMatch(/700|100/);
+    },
+  );
+
+  it('recreates shared answer buttons between questions without carrying feedback state', () => {
+    const record = createInitialRecord();
+    const session = createSession(DEFAULT_SETTINGS, {}, 'free', () => 0.5, now, [
+      'hiragana-あ',
+      'hiragana-い',
+    ]);
+    session.questions.forEach((question) => {
+      question.options = ['a', 'i', 'u'];
+    });
+    mount(gameReducer(record, { type: 'START', session, now }));
+    resume();
+    const label = session.questions[0].correctAnswer;
+    const findShared = () =>
+      Array.from(container.querySelectorAll<HTMLButtonElement>('.answer-option')).find(
+        (b) => b.querySelector('span:nth-child(2)')?.textContent === label,
+      )!;
+    const previousButton = findShared();
+    click(previousButton);
+    expect(previousButton.classList.contains('correct')).toBe(true);
+    act(() => vi.advanceTimersByTime(session.feedbackDelayMs!));
+    expect(saved().session?.index).toBe(1);
+    expect(findShared()).not.toBe(previousButton);
+    expect(findShared().className).not.toMatch(/correct|incorrect/);
+    expect(findShared().disabled).toBe(false);
+  });
+
   it('opens a row, resumes its card and starts unscored learning practice', () => {
     mount();
     click(container.querySelector<HTMLButtonElement>('.lesson-button')!);

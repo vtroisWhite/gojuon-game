@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SNAPSHOT_INTERVAL_MS } from './config';
 import { createInitialRecord, gameReducer } from './state';
-import { loadRecord, saveRecord } from './storage';
+import { initializeStorage, saveRecord } from './storage';
 import type { GameAction, Language, LearningRecord } from './types';
 
 function initialData() {
   const language: Language = navigator.language.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en';
   try {
-    return loadRecord(window.localStorage, language);
+    return initializeStorage(window.localStorage, language);
   } catch {
     return { data: createInitialRecord(language), warning: 'unavailable' };
   }
@@ -18,7 +18,7 @@ export function useGame(enabled: boolean) {
   const [data, setData] = useState(initial.data);
   const [storageWarning, setStorageWarning] = useState<string | null>(initial.warning);
   const dataRef = useRef(data);
-  // Preserve unreadable records until the user explicitly clears them.
+  // Stop retrying unavailable storage until an explicit reset.
   const canPersist = useRef(initial.warning === null);
   const clock = useRef(performance.now());
   const lastSnapshot = useRef(performance.now());
@@ -215,7 +215,10 @@ export function useGame(enabled: boolean) {
         event.preventDefault();
         dispatch({
           type: 'ANSWER',
-          choice: event.key === '0' ? null : session.questions[session.index].options[Number(event.key) - 1],
+          choice:
+            event.key === '0'
+              ? null
+              : session.questions[session.index].options[Number(event.key) - 1],
           inputMethod: 'keyboard',
           now: new Date().toISOString(),
         });

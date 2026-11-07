@@ -85,7 +85,7 @@ const zh = {
   reviewThese: '复习这些错题',
   resultErrors: '这次，再多看一眼',
   averageResponse: '平均耗时',
-  responseTimeHint: '从题目显示到选择答案，不含暂停、后台及反馈等待。',
+  responseTimeHint: '仅统计选项显示到作答的时间，不含回想、暂停、后台及反馈等待。',
   resultPerfect: '全部答对，真不错。保持这个节奏！',
   recordEyebrow: '看见自己的进步',
   recordTitle: '每一次练习，都算数。',
@@ -224,7 +224,7 @@ const en: Dictionary = {
   resultErrors: 'A few to get to know better',
   averageResponse: 'Avg. response',
   responseTimeHint:
-    'Time from the question appearing to your answer, excluding pauses, background time and feedback.',
+    'Time from choices appearing to your answer, excluding recall, pauses, background time and feedback.',
   resultPerfect: 'Every answer correct. Keep this rhythm going!',
   recordEyebrow: 'See your progress',
   recordTitle: 'Every session counts.',

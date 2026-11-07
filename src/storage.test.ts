@@ -3,7 +3,7 @@ import { DEFAULT_SETTINGS, KANA } from './kana';
 import { LESSONS } from './lessons';
 import { FEEDBACK_DELAYS } from './config';
 import { createInitialRecord, gameReducer } from './state';
-import { loadRecord, saveRecord, STORAGE_KEY } from './storage';
+import { initializeStorage, loadRecord, saveRecord, STORAGE_KEY } from './storage';
 import type { LearningRecord, PracticeSettings, SessionSnapshot } from './types';
 
 const now = '2026-11-07T12:00:00.000Z';
@@ -57,6 +57,53 @@ function answer(
 }
 
 describe('learning-v1 storage', () => {
+  it.each(['{broken json', '{"version":1}', 'null'])(
+    'automatically replaces invalid storage: %s',
+    (serialized) => {
+      let persisted = serialized;
+      const setItem = vi.fn((key: string, value: string) => {
+        expect(key).toBe(STORAGE_KEY);
+        persisted = value;
+      });
+      const result = initializeStorage({ getItem: () => persisted, setItem }, 'en');
+      expect(result).toEqual({ data: createInitialRecord('en'), warning: null });
+      expect(JSON.parse(persisted)).toEqual(result.data);
+      expect(initializeStorage({ getItem: () => persisted, setItem }, 'en').warning).toBeNull();
+      expect(setItem).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('does not reset valid data or storage that cannot be read', () => {
+    const record = activeRecord();
+    const setItem = vi.fn();
+    const restored = initializeStorage({ getItem: () => JSON.stringify(record), setItem }, 'en');
+    expect(restored.data.stats).toEqual(record.stats);
+    expect(restored.data.session?.id).toBe(record.session?.id);
+    expect(setItem).not.toHaveBeenCalled();
+    const blocked = initializeStorage(
+      {
+        getItem: () => {
+          throw new Error('blocked');
+        },
+        setItem,
+      },
+      'en',
+    );
+    expect(blocked.warning).toBe('unavailable');
+    expect(setItem).not.toHaveBeenCalled();
+  });
+
+  it('reports a failed automatic reset without deleting other data or retrying', () => {
+    const persisted = '{"version":1}';
+    const setItem = vi.fn(() => {
+      throw new Error('quota');
+    });
+    const result = initializeStorage({ getItem: () => persisted, setItem }, 'zh-CN');
+    expect(result.warning).toBe('unavailable');
+    expect(result.data.stats.answered).toBe(0);
+    expect(setItem).toHaveBeenCalledTimes(1);
+    expect(persisted).toBe('{"version":1}');
+  });
   it('uses one namespaced key and preserves the complete new schema', () => {
     const getItem = vi.fn(() => null);
     const initial = loadRecord({ getItem }, 'en');
@@ -89,7 +136,7 @@ describe('learning-v1 storage', () => {
     expect(roundtrip(resumed).warning).toBeNull();
   });
 
-  it('restores recall and revealed choice phases without resetting the response clock', () => {
+  it('starts the response clock only after revealing choices and restores its progress', () => {
     let record = gameReducer(activeRecord({ presentation: 'recall' }), {
       type: 'TICK',
       deltaMs: 200,
@@ -97,13 +144,13 @@ describe('learning-v1 storage', () => {
     });
     expect(roundtrip(record).data.session).toMatchObject({
       phase: 'recall',
-      questionElapsedMs: 200,
+      questionElapsedMs: 0,
     });
     record = gameReducer(record, { type: 'REVEAL' });
     record = gameReducer(record, { type: 'TICK', deltaMs: 150, now });
     expect(roundtrip(record).data.session).toMatchObject({
       phase: 'choice',
-      questionElapsedMs: 350,
+      questionElapsedMs: 150,
     });
     record = answer(record, null);
     const restored = roundtrip(record);
@@ -112,7 +159,7 @@ describe('learning-v1 storage', () => {
       choice: null,
       outcome: 'unknown',
       correct: false,
-      responseMs: 350,
+      responseMs: 150,
     });
     expect(restored.data.session).toMatchObject({ phase: 'feedback', feedbackRemainingMs: 0 });
   });
@@ -139,7 +186,7 @@ describe('learning-v1 storage', () => {
     });
   });
 
-  it.each(['standard', 'fast'] as const)(
+  it.each(['auto'] as const)(
     'preserves partially elapsed %s feedback and completes exactly once',
     (feedbackSpeed) => {
       const elapsed = FEEDBACK_DELAYS[feedbackSpeed]! / 2;

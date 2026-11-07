@@ -1,7 +1,6 @@
 import { CATEGORIES, KANA_BY_ID } from '../kana';
 import { getPool, getReviewCount } from '../engine';
 import { LESSONS, lessonLabel } from '../lessons';
-import { FEEDBACK_DELAYS } from '../config';
 import { CONFUSION_PAIRS, relatedGlyphs } from '../confusions';
 import { accuracy, categoryLabel, dictionaries, modeLabel } from '../i18n';
 import { kindLabel, uiText } from '../uiText';
@@ -229,12 +228,7 @@ export function HomePage({
               onChange={(e) => update({ feedbackSpeed: e.target.value as FeedbackSpeed })}
             >
               <option value="manual">{x.manual}</option>
-              <option value="standard">
-                {x.standard} · {FEEDBACK_DELAYS.standard} ms
-              </option>
-              <option value="fast">
-                {x.fast} · {FEEDBACK_DELAYS.fast} ms
-              </option>
+              <option value="auto">{x.auto}</option>
             </select>
           </label>
         </div>
