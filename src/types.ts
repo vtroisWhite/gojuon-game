@@ -11,6 +11,7 @@ export type FeedbackSpeed = 'manual' | 'auto';
 export type InputMethod = 'keyboard' | 'pointer' | 'touch';
 export type AnswerOutcome = 'correct' | 'incorrect' | 'unknown';
 export type QuestionRole = 'primary' | 'reinforcement';
+export type Vowel = 'a' | 'i' | 'u' | 'e' | 'o' | 'n';
 export interface KanaEntry {
   id: string;
   script: Script;
@@ -20,6 +21,11 @@ export interface KanaEntry {
   romaji: string;
   pronunciation: string;
   rowId: string;
+  baseGlyph: string;
+  series: string;
+  vowel: Vowel;
+  structure: 'single' | 'yoon';
+  voicing: 'plain' | 'voiced' | 'semi-voiced';
 }
 export interface LessonDefinition {
   id: string;
@@ -131,9 +137,13 @@ export interface StudySnapshot {
   cardIndex: number;
   mixLearned: boolean;
 }
+export interface StorageRecoveryNotice {
+  kind: 'settings' | 'partial' | 'reset';
+}
 export interface LearningRecord {
   version: 1;
   schema: 'learning-v1';
+  recoveryNotice?: StorageRecoveryNotice;
   language: Language;
   settings: PracticeSettings;
   session: SessionSnapshot | null;
@@ -152,6 +162,7 @@ export interface LearningRecord {
   kanaStats: Record<string, KanaPerformance>;
 }
 export type GameAction =
+  | { type: 'ACK_RECOVERY' }
   | { type: 'START'; session: SessionSnapshot; now: string }
   | { type: 'ANSWER'; choice: string | null; inputMethod: InputMethod; now: string }
   | { type: 'REVEAL' }

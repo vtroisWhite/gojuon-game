@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, createElement } from 'react';
+import { act, createElement, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,7 +7,7 @@ import App from './App';
 import { createSession } from './engine';
 import { DEFAULT_SETTINGS } from './kana';
 import { createInitialRecord, gameReducer } from './state';
-import { STORAGE_KEY } from './storage';
+import { STORAGE_KEY, STORAGE_BACKUP_KEY } from './storage';
 import type { Language, LearningRecord, PracticeSettings } from './types';
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
@@ -63,6 +63,56 @@ afterEach(() => {
 });
 
 describe('learning interface', () => {
+  it('notifies about overwritten data across strict-mode initialization and reload, until acknowledged', () => {
+    const original = JSON.stringify({ version: 1, language: 'zh-CN' });
+    localStorage.setItem(STORAGE_KEY, original);
+    act(() => root.render(createElement(StrictMode, null, createElement(App))));
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain('旧数据已被覆盖');
+    expect(localStorage.getItem(STORAGE_BACKUP_KEY)).toBe(original);
+    expect(saved().recoveryNotice?.kind).toBe('reset');
+    act(() => root.unmount());
+    root = createRoot(container);
+    act(() => root.render(createElement(App)));
+    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.activeElement?.textContent).toBe('我知道了');
+    click(button('我知道了'));
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(saved().recoveryNotice).toBeUndefined();
+    act(() => root.unmount());
+    root = createRoot(container);
+    act(() => root.render(createElement(App)));
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('explains repaired settings while keeping scores and history visible', () => {
+    let record = sessionRecord();
+    record = gameReducer(record, { type: 'ANSWER', choice: 'a', inputMethod: 'keyboard', now });
+    record = gameReducer(record, { type: 'ADVANCE', now });
+    const old = record as any;
+    old.settings.feedbackSpeed = 'standard';
+    old.history[0].settings.feedbackSpeed = 'fast';
+    mount(old);
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain('学习设置已修复');
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain(
+      '学习成绩、练习历史和有效进度已保留',
+    );
+    expect(saved().stats.answered).toBe(1);
+    expect(saved().history).toHaveLength(1);
+    click(button('我知道了'));
+    click(container.querySelectorAll<HTMLButtonElement>('nav button')[1]);
+    expect(container.querySelector('.session-score')?.textContent).toContain('100%');
+  });
+
+  it('does not claim that old data was overwritten if the backup cannot be saved', () => {
+    localStorage.setItem(STORAGE_KEY, 'broken JSON');
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota');
+    });
+    act(() => root.render(createElement(App)));
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(container.querySelector('[role="status"]')).not.toBeNull();
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('broken JSON');
+  });
   it.each(['zh-CN', 'en'] as const)(
     'defaults to automatic continuation with two choices in %s',
     (language) => {
@@ -183,15 +233,16 @@ describe('learning interface', () => {
     expect(container.querySelectorAll('.chart-cell.unpracticed')).toHaveLength(208);
     expect(container.textContent).not.toContain('undefined');
   });
-  it('disables contrast when selected categories have no confusable targets', () => {
+  it('disables contrast when no categories are selected', () => {
     const record = createInitialRecord();
-    record.settings = { ...DEFAULT_SETTINGS, categories: ['hiragana-yoon'] };
+    record.settings = { ...DEFAULT_SETTINGS, categories: [] };
     mount(record);
     click(button('易混辨析专门辨认容易混淆的字形。'));
     expect(container.querySelector<HTMLButtonElement>('.start-button')?.disabled).toBe(true);
   });
   it('starts a personal confusion pair in its original direction', () => {
     let record = sessionRecord({ categories: ['katakana-seion'] }, 'zh-CN', 'katakana-シ');
+    record.session!.questions[0].options = ['shi', 'tsu', 'so'];
     record = gameReducer(record, { type: 'ANSWER', choice: 'tsu', inputMethod: 'keyboard', now });
     record = gameReducer(record, { type: 'ADVANCE', now });
     record.settings = { ...record.settings, mode: 'romaji-kana' };
@@ -203,6 +254,7 @@ describe('learning interface', () => {
     expect(saved().session?.questions.every((q) => q.direction === 'kana-romaji')).toBe(true);
   });
   it('clears records only after confirming the dialog', () => {
+    localStorage.setItem(STORAGE_BACKUP_KEY, 'old backup');
     let record = sessionRecord();
     record = gameReducer(record, { type: 'ANSWER', choice: null, inputMethod: 'keyboard', now });
     record = gameReducer(record, { type: 'ADVANCE', now });
@@ -213,6 +265,7 @@ describe('learning interface', () => {
     expect(saved().stats.answered).toBe(1);
     click(button('确认清空'));
     expect(saved().stats.answered).toBe(0);
+    expect(localStorage.getItem(STORAGE_BACKUP_KEY)).toBeNull();
     expect(container.querySelectorAll('.chart-cell.unpracticed')).toHaveLength(208);
   });
 });

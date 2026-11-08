@@ -399,8 +399,10 @@ describe('learning game browser lifecycle', () => {
     act(() => root.render(createElement(Harness, { enabled: true })));
     expect(current.storageWarning).toBeNull();
     expect(current.data.stats.answered).toBe(0);
+    expect(current.data.recoveryNotice?.kind).toBe('reset');
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).schema).toBe('learning-v1');
     expect(localStorage.getItem('unrelated-data')).toBe('keep');
+    act(() => current.dispatch({ type: 'ACK_RECOVERY' }));
     start();
     wait(1100);
     press('1');

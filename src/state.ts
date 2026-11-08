@@ -146,6 +146,11 @@ function advance(record: LearningRecord, now: string): LearningRecord {
 export function gameReducer(record: LearningRecord, action: GameAction): LearningRecord {
   const session = record.session;
   switch (action.type) {
+    case 'ACK_RECOVERY': {
+      if (!record.recoveryNotice) return record;
+      const { recoveryNotice, ...rest } = record;
+      return rest;
+    }
     case 'START': {
       if (
         !action.session.questions.length ||

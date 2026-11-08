@@ -1,4 +1,4 @@
-import { CATEGORIES, KANA, KANA_BY_ID } from './kana';
+import { CATEGORIES, DEFAULT_SETTINGS, KANA, KANA_BY_ID } from './kana';
 import { LESSON_BY_ID } from './lessons';
 import {
   FEEDBACK_DELAYS,
@@ -8,6 +8,7 @@ import {
   REVIEW_INTERVAL_DAYS,
 } from './config';
 import { createInitialRecord } from './state';
+import { createPerformance } from './statistics';
 import type {
   Direction,
   Language,
@@ -19,6 +20,7 @@ import type {
 } from './types';
 
 export const STORAGE_KEY = 'gojuon-game:v1';
+export const STORAGE_BACKUP_KEY = STORAGE_KEY + ':backup';
 const object = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 const nonnegative = (value: unknown): value is number =>
@@ -312,7 +314,11 @@ function validPerformance(value: unknown, key: string): boolean {
     errors += count;
   }
   if (errors !== value.errors) return false;
-  const review = value.review;
+  return validReview(value.review);
+}
+
+function validReview(review: unknown): boolean {
+  if (!object(review)) return false;
   return (
     integer(review.stage) &&
     review.stage < REVIEW_INTERVAL_DAYS.length &&
@@ -329,6 +335,9 @@ function validRecord(value: unknown): value is LearningRecord {
     !object(value) ||
     value.version !== 1 ||
     value.schema !== 'learning-v1' ||
+    (value.recoveryNotice !== undefined &&
+      (!object(value.recoveryNotice) ||
+        !['settings', 'partial', 'reset'].includes(value.recoveryNotice.kind as string))) ||
     (value.language !== 'zh-CN' && value.language !== 'en') ||
     !validSettings(value.settings, true) ||
     (value.session !== null && !validSession(value.session)) ||
@@ -436,8 +445,167 @@ export function initializeStorage(
   storage: Pick<Storage, 'getItem' | 'setItem'>,
   language: Language,
 ): { data: LearningRecord; warning: string | null } {
-  const loaded = loadRecord(storage, language);
+  let original: string | null = null;
+  const loaded = loadRecord(
+    {
+      getItem: (key) => {
+        original = storage.getItem(key);
+        return original;
+      },
+    },
+    language,
+  );
   if (loaded.warning !== 'corrupt') return loaded;
-  // Replace only this game's invalid record; other site data stays intact.
-  return { data: loaded.data, warning: saveRecord(storage, loaded.data) };
+  let repaired: LearningRecord | null = null;
+  try {
+    repaired = repairRecord(JSON.parse(original!), language);
+  } catch {
+    /* Unparseable JSON needs a fresh record. */
+  }
+  const data = repaired ?? { ...loaded.data, recoveryNotice: { kind: 'reset' as const } };
+  const { recoveryNotice, ...temporary } = data;
+  try {
+    // Back up before overwriting. A failed backup must leave the original untouched.
+    storage.setItem(STORAGE_BACKUP_KEY, original!);
+    const warning = saveRecord(storage, data);
+    return warning ? { data: temporary, warning } : { data, warning: null };
+  } catch {
+    return { data: temporary, warning: 'unavailable' };
+  }
+}
+
+function repairSettings(value: unknown, allowEmpty = false): PracticeSettings {
+  if (validSettings(value, allowEmpty)) return value;
+  const source = object(value) ? value : {};
+  const categories = Array.isArray(source.categories)
+    ? [
+        ...new Set(
+          source.categories.filter((c): c is (typeof CATEGORIES)[number] =>
+            CATEGORIES.includes(c as never),
+          ),
+        ),
+      ]
+    : [...DEFAULT_SETTINGS.categories];
+  return {
+    categories: !allowEmpty && !categories.length ? [...DEFAULT_SETTINGS.categories] : categories,
+    rows: Array.isArray(source.rows) ? [...new Set(source.rows.filter(hasLesson))] : [],
+    count: [10, 20, 40, 'all'].includes(source.count as never)
+      ? (source.count as PracticeSettings['count'])
+      : DEFAULT_SETTINGS.count,
+    mode: direction(source.mode) || source.mode === 'mixed' ? source.mode : DEFAULT_SETTINGS.mode,
+    presentation: presentation(source.presentation)
+      ? (source.presentation as PracticeSettings['presentation'])
+      : DEFAULT_SETTINGS.presentation,
+    feedbackSpeed: source.feedbackSpeed === 'manual' ? 'manual' : 'auto',
+  };
+}
+
+function repairRecord(value: unknown, language: Language): LearningRecord | null {
+  if (!object(value)) return null;
+  const data = createInitialRecord(
+    value.language === 'zh-CN' || value.language === 'en' ? value.language : language,
+  );
+  let settingsOnly = value.version === 1 && value.schema === 'learning-v1';
+  data.settings = repairSettings(value.settings, true);
+  if (value.session !== null) {
+    const session = object(value.session)
+      ? { ...value.session, settings: repairSettings(value.session.settings) }
+      : null;
+    if (validSession(session))
+      data.session = { ...session, paused: session.status === 'active' || session.paused };
+    else settingsOnly = false;
+  }
+  const seenHistory = new Set<string>();
+  if (Array.isArray(value.history)) {
+    for (const item of value.history) {
+      const summary = object(item) ? { ...item, settings: repairSettings(item.settings) } : null;
+      if (
+        validSummary(summary) &&
+        !seenHistory.has(summary.id) &&
+        !(data.session?.status === 'active' && data.session.id === summary.id) &&
+        data.history.length < HISTORY_LIMIT
+      ) {
+        data.history.push(summary);
+        seenHistory.add(summary.id);
+      } else settingsOnly = false;
+    }
+  } else settingsOnly = false;
+  if (object(value.kanaStats)) {
+    for (const [key, performance] of Object.entries(value.kanaStats)) {
+      if (validPerformance(performance, key))
+        data.kanaStats[key] = performance as unknown as LearningRecord['kanaStats'][string];
+      else {
+        settingsOnly = false;
+        if (
+          object(performance) &&
+          hasKana(performance.kanaId) &&
+          direction(performance.direction) &&
+          !validReview(performance.review)
+        ) {
+          const candidate = {
+            ...performance,
+            review: createPerformance(
+              performance.kanaId,
+              performance.direction,
+              new Date().toISOString(),
+            ).review,
+          };
+          if (validPerformance(candidate, key))
+            data.kanaStats[key] = candidate as unknown as LearningRecord['kanaStats'][string];
+        }
+      }
+    }
+  } else settingsOnly = false;
+  if (uniqueStrings(value.learnedLessons) && value.learnedLessons.every(hasLesson))
+    data.learnedLessons = value.learnedLessons;
+  else {
+    data.learnedLessons = Array.isArray(value.learnedLessons)
+      ? [...new Set(value.learnedLessons.filter(hasLesson))]
+      : [];
+    settingsOnly = false;
+  }
+  if (value.study !== null) {
+    const study = value.study;
+    if (
+      object(study) &&
+      hasLesson(study.lessonId) &&
+      integer(study.cardIndex) &&
+      study.cardIndex < LESSON_BY_ID[study.lessonId].kanaIds.length &&
+      typeof study.mixLearned === 'boolean'
+    ) {
+      data.study = {
+        lessonId: study.lessonId,
+        cardIndex: study.cardIndex,
+        mixLearned: study.mixLearned,
+      };
+    } else settingsOnly = false;
+  }
+  const prior = object(value.stats) ? value.stats : {};
+  const performances = Object.values(data.kanaStats);
+  data.stats = {
+    answered: performances.reduce((sum, p) => sum + p.attempts, 0),
+    correct: performances.reduce((sum, p) => sum + p.correct, 0),
+    primaryAnswered: performances.reduce((sum, p) => sum + p.primaryAttempts, 0),
+    primaryCorrect: performances.reduce((sum, p) => sum + p.primaryCorrect, 0),
+    completed: integer(prior.completed)
+      ? prior.completed
+      : data.history.filter((h) => h.status === 'completed').length,
+    maxStreak: integer(prior.maxStreak)
+      ? prior.maxStreak
+      : Math.max(0, ...data.history.map((h) => h.maxStreak)),
+    elapsedMs: nonnegative(prior.elapsedMs) ? prior.elapsedMs : 0,
+  };
+  data.stats.maxStreak = Math.min(data.stats.maxStreak, data.stats.primaryCorrect);
+  if (!Object.entries(data.stats).every(([key, count]) => prior[key] === count))
+    settingsOnly = false;
+  const hasProgress =
+    data.stats.answered > 0 ||
+    data.stats.completed > 0 ||
+    data.stats.elapsedMs > 0 ||
+    data.history.length > 0 ||
+    data.learnedLessons.length > 0 ||
+    data.session !== null ||
+    data.study !== null;
+  data.recoveryNotice = { kind: settingsOnly ? 'settings' : hasProgress ? 'partial' : 'reset' };
+  return validRecord(data) ? data : null;
 }

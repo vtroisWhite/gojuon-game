@@ -44,6 +44,7 @@ function assertUnambiguous(question: Question) {
         : entry.glyph === option && entry.script === target.script,
     );
     expect(matches.length).toBeGreaterThan(0);
+    expect(matches.every((entry) => entry.structure === target.structure)).toBe(true);
     if (option !== question.correctAnswer)
       expect(matches.every((entry) => entry.pronunciation !== target.pronunciation)).toBe(true);
   }
@@ -107,7 +108,20 @@ describe('出题与三选一', () => {
           seededRandom(mask),
           NOW,
         );
-        session.questions.forEach(assertUnambiguous);
+        session.questions.forEach((question) => {
+          assertUnambiguous(question);
+          const target = KANA_BY_ID[question.kanaId];
+          for (const option of question.options) {
+            expect(
+              KANA.some(
+                (entry) =>
+                  categories.includes(entry.category) &&
+                  entry.script === target.script &&
+                  (mode === 'kana-romaji' ? entry.romaji === option : entry.glyph === option),
+              ),
+            ).toBe(true);
+          }
+        });
       }
     }
   });
@@ -118,17 +132,15 @@ describe('出题与三选一', () => {
     ).toHaveLength(25);
     expect(() => createSession(settings({ categories: [] }), {}, 'free')).toThrow();
   });
-  it('个人混淆优先，普通模式最多一个针对性干扰，专项可以两个', () => {
+  it('两个干扰项均来自近邻，同层个人混淆可提高出现机会', () => {
     const entry = KANA_BY_ID['katakana-シ'];
-    const perf = { ...missed(entry.id), confusions: { tsu: 5, so: 3 } };
+    const perf = { ...missed(entry.id), confusions: { sa: 5, so: 3, e: 10000 } };
     const stats = { [entry.id + ':kana-romaji']: perf };
     const seed = { entry, direction: 'kana-romaji' as const };
     const pool = KANA.filter((item) => item.category === entry.category);
-    const normal = makeQuestion(seed, pool, 'normal', seededRandom(), stats, 'free');
-    expect(normal.options).toContain('tsu');
-    expect(normal.options).not.toContain('so');
-    const contrast = makeQuestion(seed, pool, 'contrast', seededRandom(), stats, 'contrast');
-    expect(contrast.options).toEqual(expect.arrayContaining(['shi', 'tsu', 'so']));
+    const normal = makeQuestion(seed, pool, 'normal', seededRandom(), stats);
+    expect(normal.options).toEqual(expect.arrayContaining(['shi', 'sa', 'so']));
+    expect(normal.options).not.toContain('e');
   });
   it('双字辨析仍有三项，目标不会因借用干扰项而扩大', () => {
     const targets = ['katakana-シ', 'katakana-ツ'];

@@ -1,0 +1,5 @@
+Phonetic neighbor data derived from jiroshimaya/kanasim
+https://github.com/jiroshimaya/kanasim
+Revision: f067a4e8be10d818b37b8b9f08de933dae01524b
+License: Apache-2.0 (kanasim-LICENSE.txt)
+Modified: restricted to supported readings and structures; eight ranked neighbors per reading.

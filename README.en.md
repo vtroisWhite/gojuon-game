@@ -1,6 +1,6 @@
 # Kana Learning
 
-[Play](https://vtroisWhite.github.io/gojuon-game/) · [简体中文](README.md)
+[Play](https://vtroisWhite.github.io/gojuon-game) · [简体中文](README.md)
 
 A responsive hiragana and katakana practice game. Choose your range, learn at your pace, and keep progress in your browser.
 
@@ -9,7 +9,8 @@ A responsive hiragana and katakana practice game. Choose your range, learn at yo
 - Learn by row: meet 3–5 kana with learning cards, then practice. Previously viewed units can be included.
 - Free practice: combine six categories, filter rows, select either direction or a balanced mix, and choose 10/20/40/all questions. Kana do not repeat within a session.
 - Due review: schedule each kana and direction separately, prioritizing correction and overdue items.
-- Confusable kana: practice similar shapes and personal wrong-choice pairs, with explanations after answering.
+- Confusable kana: practice similar shapes and personal wrong-choice pairs. Selected pairs take priority as each other's distractors, with explanations after answering.
+- Choices match the question structure: contracted kana use contracted alternatives. Both distractors prioritize voicing families, reading series and similar shapes, with personal mistakes refining nearby candidates.
 - Three numbered choices plus “I do not know.” Optionally think before revealing choices. Correct answers advance automatically by default, with manual continuation available; mistakes wait for confirmation.
 - Learning, review and contrast sessions allow at most one spaced reinforcement per missed item. Items without enough spacing wait for later practice.
 - No countdown; backgrounding pauses automatically. Simplified Chinese and English are supported.
@@ -33,7 +34,7 @@ Review intervals grow with performance, starting at 1/3/7/14/30 days. Same-day r
 
 The latest 100 session summaries are retained without reducing cumulative totals. Reloading preserves question order, choices and feedback, and restores paused. Ending or replacing a session records it as unfinished.
 
-Data stays in this browser’s `localStorage`, under `gojuon-game:v1`. There are no learning-data uploads, accounts or analytics. Manual clearing requires confirmation. Corrupt or incompatible records reset automatically, affecting only this game's data. Unavailable browser storage allows temporary practice.
+Data stays in this browser’s `localStorage`, under `gojuon-game:v1`, with no uploads, accounts or analytics. Incompatible settings are repaired while valid scores and history are retained; damaged sections reset separately. Before replacement, the original is backed up under `gojuon-game:v1:backup`. A dialog explains the overwrite and stays pending until acknowledged. Manual clearing requires confirmation and also removes the backup. Unavailable storage allows temporary practice without forcing an overwrite.
 
 ## Romanization
 
@@ -51,3 +52,5 @@ npm run dev
 ```
 
 Local checks: `npm run typecheck`, `npm test`, `npm run build`. Feedback, review intervals and statistical thresholds are configured in `src/config.ts`.
+
+Neighbor data is bundled locally; practice requires no network requests. See [third-party data](THIRD_PARTY_NOTICES.md) for sources and regeneration instructions.

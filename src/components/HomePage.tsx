@@ -1,7 +1,8 @@
 import { CATEGORIES, KANA_BY_ID } from '../kana';
 import { getPool, getReviewCount } from '../engine';
 import { LESSONS, lessonLabel } from '../lessons';
-import { CONFUSION_PAIRS, relatedGlyphs } from '../confusions';
+import { CONFUSION_PAIRS } from '../confusions';
+import { hasRelatedDistractors } from '../distractors';
 import { accuracy, categoryLabel, dictionaries, modeLabel } from '../i18n';
 import { kindLabel, uiText } from '../uiText';
 import type {
@@ -41,7 +42,7 @@ export function HomePage({
   const active = data.session?.status === 'active';
   const contrastAvailable = pool.some(
     (entry) =>
-      relatedGlyphs(entry).length > 0 ||
+      hasRelatedDistractors(entry, pool) ||
       Object.values(data.kanaStats).some(
         (p) => p.kanaId === entry.id && Object.keys(p.confusions).length > 0,
       ),

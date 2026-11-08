@@ -179,7 +179,16 @@ export default function App() {
         </span>
         <span>{t.localNote}</span>
       </footer>
-      {dialog && (
+      {data.recoveryNotice && (
+        <ConfirmDialog
+          language={data.language}
+          kind="recovery"
+          recoveryKind={data.recoveryNotice.kind}
+          onConfirm={() => dispatch({ type: 'ACK_RECOVERY' })}
+          onCancel={() => dispatch({ type: 'ACK_RECOVERY' })}
+        />
+      )}
+      {!data.recoveryNotice && dialog && (
         <ConfirmDialog
           language={data.language}
           kind={dialog.kind}

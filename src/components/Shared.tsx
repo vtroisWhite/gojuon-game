@@ -6,6 +6,7 @@ import type {
   LearningRecord,
   PracticeKind,
   PracticeSettings,
+  StorageRecoveryNotice,
 } from '../types';
 import { dictionaries } from '../i18n';
 import { uiText } from '../uiText';
@@ -59,9 +60,11 @@ export function ConfirmDialog({
   kind,
   onConfirm,
   onCancel,
+  recoveryKind,
 }: {
   language: Language;
-  kind: 'clear' | 'end' | 'replace';
+  kind: 'clear' | 'end' | 'replace' | 'recovery';
+  recoveryKind?: StorageRecoveryNotice['kind'];
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -101,7 +104,7 @@ export function ConfirmDialog({
     };
   }, []);
   return (
-    <div className="modal-backdrop" onClick={onCancel}>
+    <div className="modal-backdrop" onClick={kind === 'recovery' ? undefined : onCancel}>
       <div
         className="confirm-dialog"
         ref={ref}
@@ -112,20 +115,47 @@ export function ConfirmDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="dialog-title">
-          {kind === 'clear' ? t.clearTitle : kind === 'end' ? t.endTitle : t.replaceTitle}
+          {kind === 'recovery'
+            ? recoveryKind === 'settings'
+              ? t.recoverySettingsTitle
+              : t.recoveryTitle
+            : kind === 'clear'
+              ? t.clearTitle
+              : kind === 'end'
+                ? t.endTitle
+                : t.replaceTitle}
         </h2>
         <p id="dialog-message">
-          {kind === 'clear' ? t.clearMessage : kind === 'end' ? t.endMessage : t.replaceMessage}
+          {kind === 'recovery'
+            ? recoveryKind === 'settings'
+              ? t.recoverySettingsMessage
+              : recoveryKind === 'partial'
+                ? t.recoveryPartialMessage
+                : t.recoveryResetMessage
+            : kind === 'clear'
+              ? t.clearMessage
+              : kind === 'end'
+                ? t.endMessage
+                : t.replaceMessage}
         </p>
         <div className="dialog-actions">
-          <button ref={cancel} className="button secondary" onClick={onCancel}>
-            {t.cancel}
-          </button>
+          {kind !== 'recovery' && (
+            <button ref={cancel} className="button secondary" onClick={onCancel}>
+              {t.cancel}
+            </button>
+          )}
           <button
+            ref={kind === 'recovery' ? cancel : undefined}
             className={'button ' + (kind === 'clear' ? 'danger-button' : 'primary')}
             onClick={onConfirm}
           >
-            {kind === 'clear' ? t.confirmClear : kind === 'end' ? t.confirmEnd : t.confirmReplace}
+            {kind === 'recovery'
+              ? t.acknowledge
+              : kind === 'clear'
+                ? t.confirmClear
+                : kind === 'end'
+                  ? t.confirmEnd
+                  : t.confirmReplace}
           </button>
         </div>
       </div>

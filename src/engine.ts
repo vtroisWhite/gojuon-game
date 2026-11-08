@@ -1,5 +1,5 @@
 import { FEEDBACK_DELAYS } from './config';
-import { relatedGlyphs } from './confusions';
+import { hasRelatedDistractors, selectDistractors } from './distractors';
 import { KANA, KANA_BY_ID } from './kana';
 import { isDue } from './review';
 import type {
@@ -80,53 +80,21 @@ export function makeQuestion(
   id: string,
   random: () => number = Math.random,
   kanaStats: Record<string, KanaPerformance> = {},
-  kind: PracticeKind = 'free',
   role: QuestionRole = 'primary',
   sourceQuestionId?: string,
+  focusIds: readonly string[] = [],
 ): Question {
   const { entry, direction } = seed;
-  const forward = direction === 'kana-romaji';
-  const value = (candidate: KanaEntry) => (forward ? candidate.romaji : candidate.glyph);
-  const valid = (candidate: KanaEntry) =>
-    candidate.pronunciation !== entry.pronunciation &&
-    (forward || candidate.script === entry.script);
-  let candidates = pool.filter(valid);
-  // Small target ranges may borrow distractors from their full category.
-  if (new Set(candidates.map(value)).size < 2) {
-    candidates = [
-      ...candidates,
-      ...KANA.filter((candidate) => candidate.category === entry.category && valid(candidate)),
-    ];
-  }
-  const alternatives = [...new Set(candidates.map(value))];
-  if (alternatives.length < 2) throw new Error('Not enough distinct answers.');
-  const personal = kanaStats[entry.id + ':' + direction]?.confusions ?? {};
-  const related = new Set(
-    relatedGlyphs(entry).flatMap((glyph) =>
-      KANA.filter((candidate) => candidate.glyph === glyph).map(value),
-    ),
-  );
-  const ranked = shuffled(alternatives, random)
-    .filter((option) => (personal[option] ?? 0) > 0 || related.has(option))
-    .sort((a, b) => (personal[b] ?? 0) - (personal[a] ?? 0));
-  const targeted = ranked.slice(0, kind === 'contrast' ? 2 : 1);
-  const ordinary = shuffled(
-    alternatives.filter((option) => !ranked.includes(option)),
-    random,
-  );
-  const fallback = shuffled(
-    alternatives.filter((option) => !targeted.includes(option) && !ordinary.includes(option)),
-    random,
-  );
-  const distractors = [...targeted, ...ordinary, ...fallback].slice(0, 2);
+  const correctAnswer = direction === 'kana-romaji' ? entry.romaji : entry.glyph;
+  const distractors = selectDistractors(entry, direction, pool, kanaStats, random, focusIds);
   return {
     id,
     kanaId: entry.id,
     direction,
     role,
     ...(sourceQuestionId ? { sourceQuestionId } : {}),
-    options: shuffled([value(entry), ...distractors], random),
-    correctAnswer: value(entry),
+    options: shuffled([correctAnswer, ...distractors], random),
+    correctAnswer,
   };
 }
 export function createSession(
@@ -138,6 +106,24 @@ export function createSession(
   targetIds?: string[],
 ): SessionSnapshot {
   const pool = getPool(settings);
+  const fullPool = KANA.filter((entry) => settings.categories.includes(entry.category));
+  const distractorPool =
+    kind === 'learn'
+      ? [
+          ...new Map(
+            [
+              ...pool,
+              ...fullPool.filter((entry) =>
+                Object.values(kanaStats).some(
+                  (p) =>
+                    p.kanaId === entry.id &&
+                    (p.primaryAttempts > 0 || p.review.lastExposedDay !== null),
+                ),
+              ),
+            ].map((entry) => [entry.id, entry]),
+          ).values(),
+        ]
+      : fullPool;
   const targeted = (entry: KanaEntry, direction?: Direction) =>
     !targetIds ||
     targetIds.includes(entry.id) ||
@@ -155,7 +141,7 @@ export function createSession(
     if (kind === 'contrast' && !targetIds) {
       entries = entries.filter(
         (entry) =>
-          relatedGlyphs(entry).length ||
+          hasRelatedDistractors(entry, distractorPool) ||
           Object.values(kanaStats).some(
             (performance) =>
               performance.kanaId === entry.id && Object.keys(performance.confusions).length,
@@ -196,10 +182,18 @@ export function createSession(
     Math.floor(random() * 0x100000000).toString(36) +
     '-' +
     Math.floor(random() * 0x100000000).toString(36);
-  const distractorPool =
-    kind === 'learn' ? pool : KANA.filter((entry) => settings.categories.includes(entry.category));
+  const focusIds = kind === 'contrast' && targetIds ? seeds.map((seed) => seed.entry.id) : [];
   const questions = seeds.map((seed, index) =>
-    makeQuestion(seed, distractorPool, id + ':' + index, random, kanaStats, kind),
+    makeQuestion(
+      seed,
+      distractorPool,
+      id + ':' + index,
+      random,
+      kanaStats,
+      'primary',
+      undefined,
+      focusIds,
+    ),
   );
   return {
     id,

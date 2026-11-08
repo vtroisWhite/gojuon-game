@@ -62,6 +62,27 @@ const BASIC: ConfusionPair[] = [
       en: 'ケ has a horizontal stroke across the top; ク begins with a corner shape.',
     },
   },
+  {
+    glyphs: ['ろ', 'る'],
+    hint: {
+      'zh-CN': 'る 的收笔有小圈，ろ 没有。',
+      en: 'る ends with a small loop; ろ does not.',
+    },
+  },
+  {
+    glyphs: ['わ', 'れ'],
+    hint: {
+      'zh-CN': 'わ 的右侧是弯曲的围合部分，れ 的右侧向外舒展。',
+      en: 'わ curves around on the right; れ extends outward.',
+    },
+  },
+  {
+    glyphs: ['わ', 'ね'],
+    hint: {
+      'zh-CN': 'ね 的右下收笔带小圈，わ 没有这个小圈。',
+      en: 'ね ends with a small loop at the lower right; わ does not.',
+    },
+  },
 ];
 export const CONFUSION_PAIRS: readonly ConfusionPair[] = BASIC;
 export function relatedGlyphs(entry: KanaEntry): string[] {
@@ -87,11 +108,43 @@ export function getConfusionFeedback(
         (item) => item.glyphs.includes(target.glyph) && item.glyphs.includes(mistaken.glyph),
       )
     : undefined;
+  let hint = pair?.hint[language];
+  if (mistaken?.baseGlyph === target.baseGlyph) {
+    hint =
+      language === 'zh-CN'
+        ? '基础字形相同：注意清音、浊点「゛」和半浊点「゜」的区别。'
+        : 'The base shape is the same. Check for no mark, dakuten ゛ or handakuten ゜.';
+  } else if (
+    mistaken &&
+    target.structure === 'yoon' &&
+    mistaken.structure === 'yoon' &&
+    target.series === mistaken.series
+  ) {
+    hint =
+      language === 'zh-CN'
+        ? '前面的假名相同，注意小写的 ゃ／ゅ／ょ。'
+        : 'The initial kana is the same. Compare the small ゃ / ゅ / ょ.';
+  } else if (
+    mistaken &&
+    target.structure === 'yoon' &&
+    mistaken.structure === 'yoon' &&
+    target.vowel === mistaken.vowel
+  ) {
+    hint =
+      language === 'zh-CN'
+        ? '后面的小写假名相同，注意前面的假名及辅音区别。'
+        : 'The small kana is the same. Compare the initial kana and consonant.';
+  } else if (mistaken && target.series === mistaken.series && !hint) {
+    hint =
+      language === 'zh-CN'
+        ? '属于同一读音系列，注意不同元音及对应字形。'
+        : 'These belong to the same reading series. Compare the vowels and shapes.';
+  }
   return {
     target,
     mistaken,
     hint:
-      pair?.hint[language] ??
+      hint ??
       (language === 'zh-CN'
         ? '对照字形和读音，再认读一次。'
         : 'Compare the shapes and readings, then try again.'),

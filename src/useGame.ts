@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SNAPSHOT_INTERVAL_MS } from './config';
 import { createInitialRecord, gameReducer } from './state';
-import { initializeStorage, saveRecord } from './storage';
+import { initializeStorage, saveRecord, STORAGE_BACKUP_KEY } from './storage';
 import type { GameAction, Language, LearningRecord } from './types';
 
 function initialData() {
@@ -23,7 +23,7 @@ export function useGame(enabled: boolean) {
   const clock = useRef(performance.now());
   const lastSnapshot = useRef(performance.now());
   const activeContext = useRef(enabled);
-  activeContext.current = enabled;
+  activeContext.current = enabled && !data.recoveryNotice;
 
   const persist = useCallback((next: LearningRecord, timestamp: number) => {
     if (!canPersist.current) return;
@@ -135,6 +135,13 @@ export function useGame(enabled: boolean) {
     canPersist.current = true;
     setStorageWarning(null);
     dispatch({ type: 'CLEAR' });
+    if (canPersist.current) {
+      try {
+        window.localStorage.removeItem(STORAGE_BACKUP_KEY);
+      } catch {
+        setStorageWarning('unavailable');
+      }
+    }
   }, [dispatch]);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import type { Category, Group, KanaEntry, PracticeSettings, Script } from './types';
+import type { Category, Group, KanaEntry, PracticeSettings, Script, Vowel } from './types';
 
 export const CATEGORIES: Category[] = [
   'hiragana-seion',
@@ -54,6 +54,12 @@ const TABLE: Record<Group, string> = {
   `,
 };
 
+const SERIES: Record<Group, readonly string[]> = {
+  seion: ['vowel', 'k', 's', 't', 'n', 'h', 'm', 'y', 'r', 'w'],
+  dakuten: ['g', 'z', 'd', 'b', 'p'],
+  yoon: ['k', 's', 't', 'n', 'h', 'm', 'r', 'g', 'z', 'b', 'p'],
+};
+
 function makeEntries(script: Script, group: Group): KanaEntry[] {
   return TABLE[group]
     .trim()
@@ -77,6 +83,15 @@ function makeEntries(script: Script, group: Group): KanaEntry[] {
             group,
             category: `${script}-${group}`,
             rowId: `${script}-${group}-${rowIndex}`,
+            baseGlyph: hiragana.normalize('NFD').replace(/[\u3099\u309a]/g, ''),
+            series: romaji === 'n' ? 'nasal' : SERIES[group][rowIndex],
+            vowel: romaji.slice(-1) as Vowel,
+            structure: group === 'yoon' ? 'yoon' : 'single',
+            voicing: hiragana.normalize('NFD').includes('\u309a')
+              ? 'semi-voiced'
+              : hiragana.normalize('NFD').includes('\u3099')
+                ? 'voiced'
+                : 'plain',
             glyph,
             romaji,
             // Treat wo and o as the same sound when choosing distractors.

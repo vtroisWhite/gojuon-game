@@ -115,7 +115,16 @@ const zh = {
   clearRecords: '清空学习记录',
   clearTitle: '清空学习记录？',
   clearMessage:
-    '这会清除当前浏览器中的练习历史、错题与未完成进度。语言和练习设置会保留。此操作无法撤销。',
+    '这会清除当前浏览器中的练习历史、错题、未完成进度和旧数据备份。语言和练习设置会保留。此操作无法撤销。',
+  recoveryTitle: '旧学习数据已更新',
+  recoverySettingsTitle: '学习设置已修复',
+  recoverySettingsMessage:
+    '旧设置不兼容，已修复并覆盖旧记录。学习成绩、练习历史和有效进度已保留，原始数据已在本浏览器备份。',
+  recoveryPartialMessage:
+    '部分旧数据无法使用，已重置异常部分并覆盖旧记录。有效学习记录已保留，原始数据已在本浏览器备份。',
+  recoveryResetMessage:
+    '旧数据无法读取或修复，已重置学习记录，旧数据已被覆盖。原始数据已在本浏览器备份，其他网站数据未受影响。',
+  acknowledge: '我知道了',
   replaceTitle: '开始新的练习？',
   replaceMessage: '当前练习将作为未完成记录保存。你也可以取消，接着完成上一次练习。',
   endTitle: '结束这次练习？',
@@ -254,7 +263,16 @@ const en: Dictionary = {
   clearRecords: 'Clear learning records',
   clearTitle: 'Clear learning records?',
   clearMessage:
-    'This removes this browser’s history, mistakes, and unfinished session. Your language and practice settings are kept. This cannot be undone.',
+    'This removes this browser’s history, mistakes, unfinished session and old-data backup. Your language and practice settings are kept. This cannot be undone.',
+  recoveryTitle: 'Previous learning data updated',
+  recoverySettingsTitle: 'Practice settings repaired',
+  recoverySettingsMessage:
+    'Incompatible settings were repaired and the previous record was overwritten. Scores, history and valid progress were retained. The original data was backed up in this browser.',
+  recoveryPartialMessage:
+    'Invalid parts were reset and the previous record was overwritten. Valid learning records were retained. The original data was backed up in this browser.',
+  recoveryResetMessage:
+    'The previous data could not be read or repaired. Learning records were reset and the old data was overwritten. The original was backed up in this browser; other site data was unaffected.',
+  acknowledge: 'Got it',
   replaceTitle: 'Start a new session?',
   replaceMessage:
     'Your current session will be saved as unfinished. You can also cancel and continue where you left off.',

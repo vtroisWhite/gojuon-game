@@ -3,7 +3,13 @@ import { DEFAULT_SETTINGS, KANA } from './kana';
 import { LESSONS } from './lessons';
 import { FEEDBACK_DELAYS } from './config';
 import { createInitialRecord, gameReducer } from './state';
-import { initializeStorage, loadRecord, saveRecord, STORAGE_KEY } from './storage';
+import {
+  initializeStorage,
+  loadRecord,
+  saveRecord,
+  STORAGE_KEY,
+  STORAGE_BACKUP_KEY,
+} from './storage';
 import type { LearningRecord, PracticeSettings, SessionSnapshot } from './types';
 
 const now = '2026-11-07T12:00:00.000Z';
@@ -60,16 +66,20 @@ describe('learning-v1 storage', () => {
   it.each(['{broken json', '{"version":1}', 'null'])(
     'automatically replaces invalid storage: %s',
     (serialized) => {
-      let persisted = serialized;
+      const persisted = new Map([[STORAGE_KEY, serialized]]);
       const setItem = vi.fn((key: string, value: string) => {
-        expect(key).toBe(STORAGE_KEY);
-        persisted = value;
+        persisted.set(key, value);
       });
-      const result = initializeStorage({ getItem: () => persisted, setItem }, 'en');
-      expect(result).toEqual({ data: createInitialRecord('en'), warning: null });
-      expect(JSON.parse(persisted)).toEqual(result.data);
-      expect(initializeStorage({ getItem: () => persisted, setItem }, 'en').warning).toBeNull();
-      expect(setItem).toHaveBeenCalledTimes(1);
+      const storage = { getItem: (key: string) => persisted.get(key) ?? null, setItem };
+      const result = initializeStorage(storage, 'en');
+      expect(result).toEqual({
+        data: { ...createInitialRecord('en'), recoveryNotice: { kind: 'reset' } },
+        warning: null,
+      });
+      expect(JSON.parse(persisted.get(STORAGE_KEY)!)).toEqual(result.data);
+      expect(persisted.get(STORAGE_BACKUP_KEY)).toBe(serialized);
+      expect(initializeStorage(storage, 'en').data.recoveryNotice?.kind).toBe('reset');
+      expect(setItem).toHaveBeenCalledTimes(2);
     },
   );
 

@@ -1,0 +1,1016 @@
+{
+  "source": "https://github.com/jiroshimaya/kanasim",
+  "revision": "f067a4e8be10d818b37b8b9f08de933dae01524b",
+  "neighbors": {
+    "a": [
+      "ha",
+      "o",
+      "pa",
+      "ka",
+      "u",
+      "ta",
+      "e",
+      "za"
+    ],
+    "i": [
+      "pi",
+      "ki",
+      "e",
+      "u",
+      "gi",
+      "bi",
+      "hi",
+      "ri"
+    ],
+    "u": [
+      "a",
+      "o",
+      "i",
+      "e",
+      "pu",
+      "n",
+      "fu",
+      "ko"
+    ],
+    "e": [
+      "pe",
+      "ke",
+      "u",
+      "te",
+      "o",
+      "i",
+      "he",
+      "se"
+    ],
+    "o": [
+      "po",
+      "ho",
+      "ko",
+      "u",
+      "a",
+      "bo",
+      "to",
+      "e"
+    ],
+    "ka": [
+      "ta",
+      "ha",
+      "ga",
+      "pa",
+      "sa",
+      "ra",
+      "a",
+      "da"
+    ],
+    "ki": [
+      "gi",
+      "hi",
+      "chi",
+      "ji",
+      "shi",
+      "ri",
+      "pi",
+      "i"
+    ],
+    "ku": [
+      "gu",
+      "pu",
+      "fu",
+      "ru",
+      "bu",
+      "su",
+      "u",
+      "tsu"
+    ],
+    "ke": [
+      "ge",
+      "te",
+      "he",
+      "pe",
+      "se",
+      "de",
+      "ze",
+      "re"
+    ],
+    "ko": [
+      "go",
+      "ho",
+      "po",
+      "o",
+      "ku",
+      "bo",
+      "to",
+      "so"
+    ],
+    "sa": [
+      "za",
+      "ta",
+      "ka",
+      "da",
+      "ha",
+      "ya",
+      "a",
+      "ra"
+    ],
+    "shi": [
+      "chi",
+      "ji",
+      "ki",
+      "hi",
+      "gi",
+      "i",
+      "ri",
+      "ni"
+    ],
+    "su": [
+      "tsu",
+      "zu",
+      "se",
+      "ku",
+      "gu",
+      "pu",
+      "fu",
+      "u"
+    ],
+    "se": [
+      "ze",
+      "te",
+      "ke",
+      "e",
+      "ge",
+      "pe",
+      "su",
+      "he"
+    ],
+    "so": [
+      "to",
+      "zo",
+      "do",
+      "yo",
+      "o",
+      "go",
+      "sa",
+      "ko"
+    ],
+    "ta": [
+      "da",
+      "ka",
+      "sa",
+      "pa",
+      "za",
+      "ra",
+      "ga",
+      "ha"
+    ],
+    "chi": [
+      "ji",
+      "shi",
+      "ki",
+      "gi",
+      "hi",
+      "ri",
+      "i",
+      "ni"
+    ],
+    "tsu": [
+      "su",
+      "zu",
+      "se",
+      "ku",
+      "pu",
+      "gu",
+      "ru",
+      "fu"
+    ],
+    "te": [
+      "pe",
+      "de",
+      "ke",
+      "ge",
+      "ze",
+      "re",
+      "se",
+      "be"
+    ],
+    "to": [
+      "do",
+      "so",
+      "zo",
+      "po",
+      "bo",
+      "ro",
+      "yo",
+      "ko"
+    ],
+    "na": [
+      "ga",
+      "ra",
+      "ma",
+      "da",
+      "za",
+      "ba",
+      "no",
+      "ya"
+    ],
+    "ni": [
+      "mi",
+      "ri",
+      "gi",
+      "bi",
+      "ji",
+      "ki",
+      "hi",
+      "nu"
+    ],
+    "nu": [
+      "mu",
+      "ru",
+      "gu",
+      "bu",
+      "zu",
+      "ne",
+      "re",
+      "yu"
+    ],
+    "ne": [
+      "me",
+      "re",
+      "de",
+      "ge",
+      "be",
+      "ze",
+      "nu",
+      "ni"
+    ],
+    "no": [
+      "mo",
+      "ro",
+      "do",
+      "na",
+      "go",
+      "bo",
+      "yo",
+      "ga"
+    ],
+    "ha": [
+      "ka",
+      "a",
+      "pa",
+      "ta",
+      "sa",
+      "ra",
+      "ga",
+      "o"
+    ],
+    "hi": [
+      "ki",
+      "shi",
+      "gi",
+      "chi",
+      "i",
+      "ji",
+      "pi",
+      "ri"
+    ],
+    "fu": [
+      "pu",
+      "ku",
+      "gu",
+      "bu",
+      "su",
+      "ru",
+      "u",
+      "tsu"
+    ],
+    "he": [
+      "ke",
+      "ge",
+      "re",
+      "se",
+      "te",
+      "e",
+      "pe",
+      "ze"
+    ],
+    "ho": [
+      "ko",
+      "po",
+      "go",
+      "o",
+      "bo",
+      "to",
+      "so",
+      "ha"
+    ],
+    "ma": [
+      "na",
+      "ba",
+      "ra",
+      "ga",
+      "da",
+      "wa",
+      "mo",
+      "za"
+    ],
+    "mi": [
+      "ni",
+      "bi",
+      "ri",
+      "gi",
+      "me",
+      "ji",
+      "nu",
+      "ne"
+    ],
+    "mu": [
+      "nu",
+      "bu",
+      "gu",
+      "ru",
+      "zu",
+      "bo",
+      "no",
+      "mo"
+    ],
+    "me": [
+      "ne",
+      "re",
+      "be",
+      "de",
+      "ge",
+      "ze",
+      "mi",
+      "nu"
+    ],
+    "mo": [
+      "no",
+      "go",
+      "bo",
+      "ro",
+      "ma",
+      "mu",
+      "do",
+      "zo"
+    ],
+    "ya": [
+      "ra",
+      "ga",
+      "na",
+      "da",
+      "za",
+      "yo",
+      "sa",
+      "ta"
+    ],
+    "yu": [
+      "ru",
+      "nu",
+      "re",
+      "ge",
+      "gu",
+      "zu",
+      "bu",
+      "ri"
+    ],
+    "yo": [
+      "ro",
+      "no",
+      "do",
+      "ya",
+      "zo",
+      "go",
+      "bo",
+      "so"
+    ],
+    "ra": [
+      "ga",
+      "na",
+      "da",
+      "ba",
+      "za",
+      "ma",
+      "ya",
+      "wa"
+    ],
+    "ri": [
+      "bi",
+      "gi",
+      "ni",
+      "ji",
+      "mi",
+      "hi",
+      "ki",
+      "shi"
+    ],
+    "ru": [
+      "nu",
+      "re",
+      "bu",
+      "gu",
+      "yu",
+      "mu",
+      "zu",
+      "ku"
+    ],
+    "re": [
+      "be",
+      "de",
+      "ne",
+      "ge",
+      "me",
+      "ze",
+      "pe",
+      "ru"
+    ],
+    "ro": [
+      "no",
+      "do",
+      "yo",
+      "bo",
+      "go",
+      "mo",
+      "zo",
+      "ru"
+    ],
+    "wa": [
+      "ga",
+      "ba",
+      "ra",
+      "ma",
+      "ha",
+      "na",
+      "da",
+      "pa"
+    ],
+    "n": [
+      "u",
+      "o",
+      "e",
+      "i",
+      "pu",
+      "ku",
+      "nu",
+      "fu"
+    ],
+    "ga": [
+      "ra",
+      "da",
+      "na",
+      "ba",
+      "ka",
+      "za",
+      "wa",
+      "ha"
+    ],
+    "gi": [
+      "ji",
+      "ki",
+      "ri",
+      "hi",
+      "chi",
+      "bi",
+      "shi",
+      "ni"
+    ],
+    "gu": [
+      "bu",
+      "ku",
+      "pu",
+      "fu",
+      "zu",
+      "ru",
+      "nu",
+      "tsu"
+    ],
+    "ge": [
+      "de",
+      "ke",
+      "re",
+      "ze",
+      "be",
+      "pe",
+      "ne",
+      "te"
+    ],
+    "go": [
+      "ko",
+      "bo",
+      "ho",
+      "po",
+      "mo",
+      "do",
+      "ro",
+      "o"
+    ],
+    "za": [
+      "da",
+      "sa",
+      "ta",
+      "ga",
+      "ra",
+      "ka",
+      "na",
+      "ba"
+    ],
+    "ji": [
+      "chi",
+      "shi",
+      "gi",
+      "ki",
+      "hi",
+      "ri",
+      "ni",
+      "pi"
+    ],
+    "zu": [
+      "tsu",
+      "su",
+      "ku",
+      "gu",
+      "bu",
+      "ru",
+      "pu",
+      "ze"
+    ],
+    "ze": [
+      "de",
+      "se",
+      "te",
+      "ge",
+      "re",
+      "be",
+      "pe",
+      "ke"
+    ],
+    "zo": [
+      "do",
+      "so",
+      "to",
+      "bo",
+      "go",
+      "za",
+      "ko",
+      "o"
+    ],
+    "da": [
+      "za",
+      "ga",
+      "ra",
+      "ba",
+      "ta",
+      "na",
+      "ka",
+      "sa"
+    ],
+    "de": [
+      "be",
+      "re",
+      "ge",
+      "ze",
+      "pe",
+      "ne",
+      "te",
+      "ke"
+    ],
+    "do": [
+      "zo",
+      "ro",
+      "to",
+      "bo",
+      "no",
+      "yo",
+      "so",
+      "go"
+    ],
+    "ba": [
+      "da",
+      "ra",
+      "ma",
+      "ga",
+      "na",
+      "za",
+      "pa",
+      "wa"
+    ],
+    "bi": [
+      "ri",
+      "gi",
+      "mi",
+      "ni",
+      "ji",
+      "pi",
+      "hi",
+      "ki"
+    ],
+    "bu": [
+      "gu",
+      "pu",
+      "ku",
+      "ru",
+      "zu",
+      "nu",
+      "fu",
+      "mu"
+    ],
+    "be": [
+      "re",
+      "de",
+      "ge",
+      "ze",
+      "me",
+      "pe",
+      "ne",
+      "ke"
+    ],
+    "bo": [
+      "go",
+      "po",
+      "do",
+      "ko",
+      "mo",
+      "zo",
+      "ro",
+      "ho"
+    ],
+    "pa": [
+      "ba",
+      "ka",
+      "ta",
+      "ha",
+      "da",
+      "a",
+      "ra",
+      "po"
+    ],
+    "pi": [
+      "bi",
+      "gi",
+      "ri",
+      "hi",
+      "ki",
+      "i",
+      "shi",
+      "ji"
+    ],
+    "pu": [
+      "bu",
+      "ku",
+      "fu",
+      "gu",
+      "ru",
+      "su",
+      "tsu",
+      "zu"
+    ],
+    "pe": [
+      "te",
+      "be",
+      "de",
+      "ke",
+      "ge",
+      "re",
+      "ze",
+      "se"
+    ],
+    "po": [
+      "bo",
+      "ko",
+      "to",
+      "ho",
+      "go",
+      "o",
+      "do",
+      "so"
+    ],
+    "kya": [
+      "gya",
+      "hya",
+      "ja",
+      "cha",
+      "sha",
+      "rya",
+      "pya",
+      "nya"
+    ],
+    "kyu": [
+      "hyu",
+      "chu",
+      "gyu",
+      "ju",
+      "shu",
+      "pyu",
+      "ryu",
+      "nyu"
+    ],
+    "kyo": [
+      "hyo",
+      "cho",
+      "gyo",
+      "sho",
+      "jo",
+      "pyo",
+      "ryo",
+      "nyo"
+    ],
+    "sha": [
+      "cha",
+      "ja",
+      "kya",
+      "hya",
+      "gya",
+      "nya",
+      "sho",
+      "rya"
+    ],
+    "shu": [
+      "chu",
+      "ju",
+      "hyu",
+      "kyu",
+      "gyu",
+      "nyu",
+      "ryu",
+      "pyu"
+    ],
+    "sho": [
+      "cho",
+      "jo",
+      "hyo",
+      "kyo",
+      "gyo",
+      "nyo",
+      "sha",
+      "ryo"
+    ],
+    "cha": [
+      "sha",
+      "kya",
+      "ja",
+      "gya",
+      "hya",
+      "nya",
+      "rya",
+      "pya"
+    ],
+    "chu": [
+      "ju",
+      "shu",
+      "kyu",
+      "hyu",
+      "gyu",
+      "nyu",
+      "ryu",
+      "pyu"
+    ],
+    "cho": [
+      "jo",
+      "sho",
+      "kyo",
+      "hyo",
+      "gyo",
+      "ryo",
+      "nyo",
+      "pyo"
+    ],
+    "nya": [
+      "mya",
+      "rya",
+      "gya",
+      "bya",
+      "ja",
+      "nyo",
+      "hya",
+      "kya"
+    ],
+    "nyu": [
+      "ryu",
+      "myu",
+      "byu",
+      "gyu",
+      "ju",
+      "hyu",
+      "kyu",
+      "pyu"
+    ],
+    "nyo": [
+      "myo",
+      "ryo",
+      "gyo",
+      "byo",
+      "jo",
+      "nya",
+      "hyo",
+      "kyo"
+    ],
+    "hya": [
+      "kya",
+      "sha",
+      "cha",
+      "gya",
+      "ja",
+      "rya",
+      "nya",
+      "pya"
+    ],
+    "hyu": [
+      "kyu",
+      "shu",
+      "chu",
+      "gyu",
+      "pyu",
+      "ju",
+      "ryu",
+      "nyu"
+    ],
+    "hyo": [
+      "kyo",
+      "sho",
+      "gyo",
+      "cho",
+      "jo",
+      "pyo",
+      "ryo",
+      "nyo"
+    ],
+    "mya": [
+      "nya",
+      "rya",
+      "bya",
+      "gya",
+      "ja",
+      "hya",
+      "kya",
+      "pya"
+    ],
+    "myu": [
+      "nyu",
+      "ryu",
+      "byu",
+      "gyu",
+      "ju",
+      "hyu",
+      "kyu",
+      "shu"
+    ],
+    "myo": [
+      "nyo",
+      "ryo",
+      "byo",
+      "gyo",
+      "jo",
+      "pyo",
+      "hyo",
+      "kyo"
+    ],
+    "rya": [
+      "gya",
+      "nya",
+      "bya",
+      "ryo",
+      "mya",
+      "pya",
+      "ja",
+      "kya"
+    ],
+    "ryu": [
+      "byu",
+      "gyu",
+      "nyu",
+      "myu",
+      "hyu",
+      "ju",
+      "pyu",
+      "kyu"
+    ],
+    "ryo": [
+      "gyo",
+      "byo",
+      "myo",
+      "pyo",
+      "nyo",
+      "jo",
+      "hyo",
+      "kyo"
+    ],
+    "gya": [
+      "ja",
+      "kya",
+      "rya",
+      "hya",
+      "bya",
+      "nya",
+      "sha",
+      "pya"
+    ],
+    "gyu": [
+      "ryu",
+      "ju",
+      "kyu",
+      "byu",
+      "hyu",
+      "nyu",
+      "pyu",
+      "chu"
+    ],
+    "gyo": [
+      "ryo",
+      "byo",
+      "jo",
+      "hyo",
+      "kyo",
+      "nyo",
+      "pyo",
+      "myo"
+    ],
+    "ja": [
+      "gya",
+      "sha",
+      "kya",
+      "cha",
+      "hya",
+      "rya",
+      "nya",
+      "bya"
+    ],
+    "ju": [
+      "chu",
+      "gyu",
+      "ryu",
+      "kyu",
+      "shu",
+      "hyu",
+      "nyu",
+      "byu"
+    ],
+    "jo": [
+      "cho",
+      "gyo",
+      "sho",
+      "kyo",
+      "hyo",
+      "ryo",
+      "nyo",
+      "byo"
+    ],
+    "bya": [
+      "gya",
+      "rya",
+      "nya",
+      "mya",
+      "ja",
+      "kya",
+      "pya",
+      "hya"
+    ],
+    "byu": [
+      "ryu",
+      "nyu",
+      "gyu",
+      "myu",
+      "ju",
+      "pyu",
+      "hyu",
+      "kyu"
+    ],
+    "byo": [
+      "ryo",
+      "gyo",
+      "myo",
+      "pyo",
+      "jo",
+      "nyo",
+      "hyo",
+      "kyo"
+    ],
+    "pya": [
+      "rya",
+      "gya",
+      "kya",
+      "bya",
+      "ja",
+      "hya",
+      "mya",
+      "sha"
+    ],
+    "pyu": [
+      "ryu",
+      "byu",
+      "kyu",
+      "hyu",
+      "gyu",
+      "shu",
+      "ju",
+      "myu"
+    ],
+    "pyo": [
+      "byo",
+      "ryo",
+      "gyo",
+      "kyo",
+      "hyo",
+      "jo",
+      "myo",
+      "sho"
+    ]
+  }
+}
